@@ -1,0 +1,40 @@
+trigger: none
+
+schedules:
+  - cron: "0 0 1 */4 *"   # replace with your schedule 
+    branches: 
+      include: 
+      - '*'
+
+pool:
+  name: Azure Pipelines
+  vmImage: 'ubuntu-latest'
+
+
+steps:
+  - checkout: self
+    persistCredentials: true
+
+  - script: git checkout master
+    displayName: 'Checkout master'
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore
+    inputs:
+      command: restore
+      projects: '**/*.csproj'
+  
+  - task: DotNetCoreCLI@2
+    displayName: run
+    inputs:
+      command: run
+      projects: '**/*.csproj'
+      arguments: '$(username) $(password) $(organization)'
+  
+  - script: |
+     git config --global user.name "github-actions[bot]"
+     git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
+     git add .
+     git commit -m "explore images"
+     git push origin
+    displayName: 'git push'
